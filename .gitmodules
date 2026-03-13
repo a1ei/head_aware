@@ -1,0 +1,6 @@
+[submodule "3rdparty/lmms-eval"]
+	path = 3rdparty/lmms-eval
+	url = git@github.com:LSY-noya/lmms-eval.git
+[submodule "3rdparty/LLaVA-NeXT"]
+	path = 3rdparty/LLaVA-NeXT
+	url = git@github.com:LSY-noya/LLaVA-NeXT.git
