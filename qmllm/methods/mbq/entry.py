@@ -43,27 +43,27 @@ def mbq_entry(model, prompt_inputs, prompt_kwargs, run_mbq_process: bool, pseudo
         torch.save(mbq_results, scale_path)
         print("MBQ results saved at", scale_path)
     #————————————————————————————————————————————————————————————————————————————————————                               
-    inputs, vision_mask, caption_mask = process_input(prompt_inputs, prompt_kwargs)                                     
-    from qmllm.models.qwen3_vl.qwen3_vl_attention import self_Qwen3VLTextAttention                                      
-    for layer in model.model.model.language_model.layers:                                                               
-        layer.self_attn = self_Qwen3VLTextAttention(layer.self_attn)                                                    
+    # inputs, vision_mask, caption_mask = process_input(prompt_inputs, prompt_kwargs)                                     
+    # from qmllm.models.qwen3_vl.qwen3_vl_attention import self_Qwen3VLTextAttention                                      
+    # for layer in model.model.model.language_model.layers:                                                               
+    #     layer.self_attn = self_Qwen3VLTextAttention(layer.self_attn)                                                    
                                                                                                                         
-    with torch.no_grad():                                                                                               
-        mini_batch = 1                                                                                                  
-        total_samples = next(iter(prompt_inputs.values())).shape[0]                                                     
-        accum_steps = int(total_samples/mini_batch)                                                                     
+    # with torch.no_grad():                                                                                               
+    #     mini_batch = 1                                                                                                  
+    #     total_samples = next(iter(prompt_inputs.values())).shape[0]                                                     
+    #     accum_steps = int(total_samples/mini_batch)                                                                     
                                                                                                                         
-        for i in tqdm.tqdm(range(0, total_samples, mini_batch), desc="compute ....."):                                  
-            mini_inputs = {}                                                                                            
-            for k in inputs:                                                                                            
-                if isinstance(inputs[k], torch.Tensor):                                                                 
-                    mini_inputs[k] = inputs[k][i:i+mini_batch]                                                          
-            for layer in model.model.model.language_model.layers:                                                       
-                layer.self_attn.vision_mask = vision_mask[i:i+mini_batch]                                               
-                layer.self_attn.caption_mask = caption_mask[i:i+mini_batch]                                             
-                layer.self_attn.data_num = i                                                                            
-            outputs = model(**mini_inputs)                                                                              
-        print("finish")                                                                                                 
+    #     for i in tqdm.tqdm(range(0, total_samples, mini_batch), desc="compute ....."):                                  
+    #         mini_inputs = {}                                                                                            
+    #         for k in inputs:                                                                                            
+    #             if isinstance(inputs[k], torch.Tensor):                                                                 
+    #                 mini_inputs[k] = inputs[k][i:i+mini_batch]                                                          
+    #         for layer in model.model.model.language_model.layers:                                                       
+    #             layer.self_attn.vision_mask = vision_mask[i:i+mini_batch]                                               
+    #             layer.self_attn.caption_mask = caption_mask[i:i+mini_batch]                                             
+    #             layer.self_attn.data_num = i                                                                            
+    #         outputs = model(**mini_inputs)                                                                              
+    #     print("finish")                                                                                                 
     #————————————————————————————————————————————————————————————————————————————————————
     if pseudo_quant:
         mbq_results = torch.load(scale_path, map_location="cpu")
