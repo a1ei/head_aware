@@ -12,7 +12,7 @@ def qwrapper(model, prompt_inputs, prompt_kwargs, args):
     elif args.method == "smoothquant":
         model = smoothquant_entry(model, prompt_inputs, prompt_kwargs, run_sq_process=args.run_process, pseudo_quant=args.pseudo_quant, scale_path=args.scale_path, w_bit=args.w_bit, a_bit=args.a_bit, alpha=args.alpha)
     elif args.method == "mbq":
-        wa_quant = args.w_bit < 16 and args.a_bit < 16
+        wa_quant = args.a_bit # < 16 and args.w_bit < 16
         a_quant = args.a_bit <= 16 and args.w_bit >= 16 #这里可能需要修改 here
         model = mbq_entry(model, prompt_inputs, prompt_kwargs, 
                                 run_mbq_process=args.run_process, 

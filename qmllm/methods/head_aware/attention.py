@@ -1,9 +1,12 @@
 import math
+import os  #change here
 from typing import Callable
 
+import matplotlib.pyplot as plt  #change here
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from matplotlib.patches import Patch  #change here
 
 from transformers.models.qwen3_vl.modeling_qwen3_vl import ALL_ATTENTION_FUNCTIONS
 from transformers.models.qwen3_vl.modeling_qwen3_vl import Cache
@@ -19,6 +22,9 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
         return hidden_states
     hidden_states = hidden_states[:, :, None, :, :].expand(batch, num_key_value_heads, n_rep, seq_len, head_dim)
     return hidden_states.reshape(batch, num_key_value_heads * n_rep, seq_len, head_dim)
+
+
+ATTN_OUTPUT_DIR = "/home/liuzhilei/python_project/head_aware/num_attention"  #change here
 
 
 def compute_cross_head_scores(attn_weights, vision_mask, text_mask, token_mask=None):
@@ -97,6 +103,8 @@ class CrossScoreQwen3VLTextAttention(nn.Module):
         self.vision_mask = None
         self.text_mask = None
         self.token_mask = None
+        self.data_index = None  #change here
+        self.save_attn_output = False  #change here
 
     def forward(
         self,
@@ -146,6 +154,7 @@ class CrossScoreQwen3VLTextAttention(nn.Module):
                 dropout_p=0.0,
             )
             self.record_cross_scores(manual_attn_weights)
+            # self.save_attn_output_histograms(attn_output)  #change here
 
         attn_output = attn_output.reshape(*input_shape, -1).contiguous()
         attn_output = self.o_proj(attn_output)
@@ -158,6 +167,101 @@ class CrossScoreQwen3VLTextAttention(nn.Module):
         if cross_scores is None:
             return
         self.recorder.update(self.layer_idx, cross_scores)
+
+    def save_attn_output_histograms(self, attn_output):
+        if not self.save_attn_output or self.data_index is None:  #change here
+            return
+
+        layer_dir = os.path.join(ATTN_OUTPUT_DIR, str(self.data_index), f"layer_{self.layer_idx}")  #change here
+        first_output_path = os.path.join(layer_dir, "part_0.png")  #change here
+        if os.path.exists(first_output_path):  #change here
+            return
+
+        os.makedirs(layer_dir, exist_ok=True)  #change here
+        sample_output = attn_output[0].detach().float().cpu().permute(1, 0, 2)  #change here
+        num_heads = sample_output.shape[0]
+        seq_len = sample_output.shape[1]  #change here
+        head_dim = sample_output.shape[2]  #change here
+        heads_per_figure = 8  #change here
+        num_cols = 4  #change here
+        num_rows = 2  #change here
+        token_stride = max(1, seq_len // 256)  #change here
+        channel_stride = max(1, head_dim // 96)  #change here
+
+        token_indices = torch.arange(0, seq_len, token_stride)  #change here
+        channel_indices = torch.arange(0, head_dim, channel_stride)  #change here
+        token_grid, channel_grid = torch.meshgrid(token_indices, channel_indices, indexing="ij")  #change here
+
+        token_mask = torch.ones(seq_len, dtype=torch.bool)  #change here
+        if self.token_mask is not None:
+            token_mask = self.token_mask[0].detach().cpu().bool()  #change here
+        vision_mask = torch.zeros(seq_len, dtype=torch.bool)  #change here
+        if self.vision_mask is not None:
+            vision_mask = self.vision_mask[0].detach().cpu().bool()  #change here
+        text_mask = (~vision_mask) & token_mask  #change here
+        masked_mask = ~token_mask  #change here
+
+        token_colors = torch.zeros(seq_len, 4, dtype=torch.float32)  #change here
+        token_colors[vision_mask] = torch.tensor([0.12, 0.47, 0.71, 0.85])  #change here
+        token_colors[text_mask] = torch.tensor([1.00, 0.50, 0.05, 0.85])  #change here
+        token_colors[masked_mask] = torch.tensor([0.65, 0.65, 0.65, 0.30])  #change here
+
+        global_abs_max = float(sample_output.abs().max())  #change here
+
+        for part_idx, head_start in enumerate(range(0, num_heads, heads_per_figure)):  #change here
+            fig = plt.figure(figsize=(26, 12), dpi=220)  #change here
+            axes = []
+            head_stop = min(head_start + heads_per_figure, num_heads)  #change here
+
+            for slot_idx, head_idx in enumerate(range(head_start, head_stop)):  #change here
+                ax = fig.add_subplot(num_rows, num_cols, slot_idx + 1, projection="3d")  #change here
+                axes.append(ax)
+                head_matrix = sample_output[head_idx]  #change here
+                head_tensor = head_matrix.reshape(-1)  #change here
+                head_min = float(head_tensor.min())  #change here
+                head_max = float(head_tensor.max())  #change here
+                head_mean = float(head_tensor.mean())  #change here
+                head_std = float(head_tensor.std())  #change here
+
+                sampled_values = head_matrix[token_indices][:, channel_indices].numpy()  #change here
+                sampled_colors = token_colors[token_indices][:, None, :].expand(-1, channel_indices.numel(), -1).numpy()  #change here
+
+                ax.plot_surface(  #change here
+                    token_grid.numpy(),
+                    channel_grid.numpy(),
+                    sampled_values,
+                    facecolors=sampled_colors,
+                    linewidth=0,
+                    antialiased=False,
+                    shade=False,
+                )
+                ax.set_title(
+                    f"head_{head_idx}\nmin={head_min:.2e} max={head_max:.2e}\nmean={head_mean:.2e} std={head_std:.2e}"
+                )  #change here
+                ax.set_xlabel("token", fontsize=7)  #change here
+                ax.set_ylabel("channel", fontsize=7)  #change here
+                ax.set_zlabel("value", fontsize=7)  #change here
+                ax.set_zlim(-global_abs_max, global_abs_max)  #change here
+                ax.tick_params(labelsize=7)  #change here
+                ax.view_init(elev=28, azim=-58)  #change here
+                ax.set_box_aspect((2.8, 1.2, 1.4))  #change here
+
+            for slot_idx in range(head_stop - head_start, heads_per_figure):  #change here
+                ax = fig.add_subplot(num_rows, num_cols, slot_idx + 1, projection="3d")  #change here
+                ax.axis("off")
+
+            fig.legend(  #change here
+                handles=[
+                    Patch(facecolor=(0.12, 0.47, 0.71, 0.85), label="vision token"),
+                    Patch(facecolor=(1.00, 0.50, 0.05, 0.85), label="text token"),
+                    Patch(facecolor=(0.65, 0.65, 0.65, 0.30), label="masked token"),
+                ],
+                loc="upper right",
+                fontsize=10,
+            )
+            fig.tight_layout()
+            fig.savefig(os.path.join(layer_dir, f"part_{part_idx}.png"), bbox_inches="tight", dpi=220)  #change here
+            plt.close(fig)
 
     def manual_attention_with_weights(self, query, key, value, attention_mask=None, scaling=None, dropout_p=0.0):
         if hasattr(self, "num_key_value_groups"):

@@ -1,0 +1,54 @@
+head_aware w16a6 qwen3-vl head_cross_model_loss+重建loss(attn_output)  time:12:46 
+|Tasks |Version|Filter|n-shot|        Metric         |   |Value |   |Stderr|
+|------|-------|------|-----:|-----------------------|---|-----:|---|------|
+|mmstar|Yaml   |none  |     0|average                |↑  |0.5640|±  |   N/A|
+|mmstar|Yaml   |none  |     0|coarse perception      |↑  |0.7265|±  |   N/A|
+|mmstar|Yaml   |none  |     0|fine-grained perception|↑  |0.5495|±  |   N/A|
+|mmstar|Yaml   |none  |     0|instance reasoning     |↑  |0.6985|±  |   N/A|
+|mmstar|Yaml   |none  |     0|logical reasoning      |↑  |0.5103|±  |   N/A|
+|mmstar|Yaml   |none  |     0|math                   |↑  |0.4889|±  |   N/A|
+|mmstar|Yaml   |none  |     0|science & technology   |↑  |0.4103|±  |   N/A|
+
+head_aware w16a6 qwen3-vl head_cross_model_loss 不带重建loss(attn_output) time: 10:49
+|Tasks |Version|Filter|n-shot|        Metric         |   |Value |   |Stderr|
+|------|-------|------|-----:|-----------------------|---|-----:|---|------|
+|mmstar|Yaml   |none  |     0|average                |↑  |0.5663|±  |   N/A|
+|mmstar|Yaml   |none  |     0|coarse perception      |↑  |0.7234|±  |   N/A|
+|mmstar|Yaml   |none  |     0|fine-grained perception|↑  |0.5855|±  |   N/A|
+|mmstar|Yaml   |none  |     0|instance reasoning     |↑  |0.6876|±  |   N/A|
+|mmstar|Yaml   |none  |     0|logical reasoning      |↑  |0.5166|±  |   N/A|
+|mmstar|Yaml   |none  |     0|math                   |↑  |0.4850|±  |   N/A|
+|mmstar|Yaml   |none  |     0|science & technology   |↑  |0.3997|±  |   N/A|
+
+head_aware w16a7 qwen3-vl head_cross_model_loss 不带重建loss(attn_output) time: 10:49
+|Tasks |Version|Filter|n-shot|        Metric         |   |Value |   |Stderr|
+|------|-------|------|-----:|-----------------------|---|-----:|---|------|
+|mmstar|Yaml   |none  |     0|average                |↑  |0.6328|±  |   N/A|
+|mmstar|Yaml   |none  |     0|coarse perception      |↑  |0.7813|±  |   N/A|
+|mmstar|Yaml   |none  |     0|fine-grained perception|↑  |0.6270|±  |   N/A|
+|mmstar|Yaml   |none  |     0|instance reasoning     |↑  |0.7258|±  |   N/A|
+|mmstar|Yaml   |none  |     0|logical reasoning      |↑  |0.6089|±  |   N/A|
+|mmstar|Yaml   |none  |     0|math                   |↑  |0.5666|±  |   N/A|
+|mmstar|Yaml   |none  |     0|science & technology   |↑  |0.4871|±  |   N/A|
+
+head_aware w16a6 qwen3-vl 不带head_cross_model_loss 纯重建loss(attn_output)  time:10:35
+|Tasks |Version|Filter|n-shot|        Metric         |   |Value |   |Stderr|
+|------|-------|------|-----:|-----------------------|---|-----:|---|------|
+|mmstar|Yaml   |none  |     0|average                |↑  |0.5560|±  |   N/A|
+|mmstar|Yaml   |none  |     0|coarse perception      |↑  |0.7346|±  |   N/A|
+|mmstar|Yaml   |none  |     0|fine-grained perception|↑  |0.5699|±  |   N/A|
+|mmstar|Yaml   |none  |     0|instance reasoning     |↑  |0.6573|±  |   N/A|
+|mmstar|Yaml   |none  |     0|logical reasoning      |↑  |0.5566|±  |   N/A|
+|mmstar|Yaml   |none  |     0|math                   |↑  |0.4456|±  |   N/A|
+|mmstar|Yaml   |none  |     0|science & technology   |↑  |0.3723|±  |   N/A|
+
+head_aware w16a6 qwen3-vl 不带head_cross_model_loss 纯重建loss(attn_input)  time:11:30
+|Tasks |Version|Filter|n-shot|        Metric         |   |Value |   |Stderr|
+|------|-------|------|-----:|-----------------------|---|-----:|---|------|
+|mmstar|Yaml   |none  |     0|average                |↑  |0.5532|±  |   N/A|
+|mmstar|Yaml   |none  |     0|coarse perception      |↑  |0.7075|±  |   N/A|
+|mmstar|Yaml   |none  |     0|fine-grained perception|↑  |0.5562|±  |   N/A|
+|mmstar|Yaml   |none  |     0|instance reasoning     |↑  |0.6577|±  |   N/A|
+|mmstar|Yaml   |none  |     0|logical reasoning      |↑  |0.5144|±  |   N/A|
+|mmstar|Yaml   |none  |     0|math                   |↑  |0.4612|±  |   N/A|
+|mmstar|Yaml   |none  |     0|science & technology   |↑  |0.4223|±  |   N/A|

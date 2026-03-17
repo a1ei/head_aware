@@ -5,7 +5,7 @@ import torch.nn as nn
 import tqdm
 
 from qmllm.methods.head_aware.attention import patch_qwen3vl_attention_modules, restore_qwen3vl_attention_modules
-from qmllm.methods.head_aware.quantize.auto_scale import apply_scale, optimize_qwen_block_scales
+from qmllm.methods.head_aware.quantize.auto_scale import apply_scale, forward_qwen_block, optimize_qwen_block_scales
 from qmllm.methods.mbq.quantize.pre_quant import get_blocks, move_embed, process_input
 from qmllm.utils.search import append_str_prefix, get_hidden_states, get_op_name
 
@@ -55,6 +55,8 @@ def collect_head_cross_scores(model, prompt_inputs, prompt_kwargs):
                 layer.self_attn.vision_mask = vision_mask[index : index + 1]
                 layer.self_attn.text_mask = caption_mask[index : index + 1]
                 layer.self_attn.token_mask = token_mask
+                layer.self_attn.data_index = index  #change here
+                layer.self_attn.save_attn_output = True  #change here
 
             model(**mini_inputs)
     finally:
@@ -158,9 +160,7 @@ def run_head_aware(
         head_aware_results["scale"] += append_str_prefix(scales_list, get_op_name(model.model, layer) + ".")
 
         with torch.no_grad():
-            execution_device = next(layer.parameters()).device
-            current_kwargs["position_embeddings"] = (k.to(execution_device) for k in current_kwargs['position_embeddings'])
-            inps = get_hidden_states(layer(layer_input, **current_kwargs))
+            inps = get_hidden_states(forward_qwen_block(layer, layer_input, current_kwargs))
 
         layers[layer_idx] = layer.cpu()
         gc.collect()

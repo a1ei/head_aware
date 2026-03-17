@@ -250,7 +250,9 @@ def get_blocks(model):
     elif model.__class__.__name__ == "InternVLChatModel":
         layers = model.language_model.model.layers
     elif model.__class__.__name__ == "Qwen2VLForConditionalGeneration":
-        layers = model.model.layers
+        layers = model.model.language_model.layers
+    elif model.__class__.__name__ == "Qwen3VLForConditionalGeneration":
+        layers = model.model.language_model.layers
     elif model.__class__.__name__ == "LlavaLlamaModel":
         layers = model.llm.model.layers
     elif isinstance(model, OPTForCausalLM):

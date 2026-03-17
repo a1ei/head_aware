@@ -16,7 +16,7 @@ import yaml
 warnings.simplefilter("ignore", category=DeprecationWarning)
 
 import hashlib
-from pathlib import Path
+from pathlib import Path 
 from typing import Union
 
 from accelerate import Accelerator
@@ -281,17 +281,17 @@ def parse_eval_args() -> argparse.Namespace:
     # TODO: quantization parameters
     parser.add_argument("--method", default="head_aware", choices=["awq", "smoothquant", "mbq", "head_aware", "rtn", None])
     parser.add_argument("--w_bit", default=16, type=int)
-    parser.add_argument("--a_bit", default=5, type=int) 
+    parser.add_argument("--a_bit", default=6, type=int) 
     parser.add_argument("--w_group", default=128, type=int) 
     parser.add_argument("--alpha", default=0.5, type=int)
-    parser.add_argument("--reweight", action="store_true") 
+    parser.add_argument("--reweight", action="store_true")    
     parser.add_argument("--distort", action="store_true") 
     parser.add_argument("--loss_mode", default="mae", choices=["mae", "mse"])
-    parser.add_argument("--scale_path", default="scale_cache/head_aware/qwen3_8b_w16a5.pt", type=str)
+    parser.add_argument("--scale_path", default="scale_cache/head_aware/qwen3-vl_8b_w16a5_tmp4.pt", type=str)
     parser.add_argument("--run_process", action="store_true") 
     parser.add_argument("--pseudo_quant", default=True ,action="store_true")
     parser.add_argument("--process_with_media", default=True ,action="store_true", help="Whether you will process you dataset with audio, image. By default set to False" "In case some benchmarks need to be processed with media, set this flag to True.")
-    args = parser.parse_args()
+    args = parser.parse_args() 
     return args 
 
 
